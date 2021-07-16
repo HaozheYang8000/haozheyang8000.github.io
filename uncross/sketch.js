@@ -1,5 +1,5 @@
 let V, E;
-let l = 3;
+let l = 2;
 let Sc = -1;
 let Csc = [];
 let but, sel;
@@ -28,6 +28,16 @@ function init() {
     }
 }
 
+function intersects(a,b,c,d,p,q,r,s) {
+    let det = (c-a)*(s-q)-(r-p)*(d-b);
+    if (det === 0) return false;
+    else {
+        let al = ((s-q)*(r-a)+(p-r)*(s-b))/det;
+        let la = ((b-d)*(r-a)+(c-a)*(s-b))/det;
+        return 0<al && al<1 && 0<la && la<1;
+    }
+}
+
 function setup() {
     createCanvas(800, 800);
     but = createButton("New Game");
@@ -36,11 +46,7 @@ function setup() {
     but.position(100, 29);
 
     sel = createSelect();
-    sel.option(1);
-    sel.option(2);
-    sel.option(3);
-    sel.option(4);
-    sel.option(5);
+    for (let i = 0; i < 7; i++) sel.option(i);
     sel.changed(changeN);
     sel.position(50, 30);
 
@@ -57,7 +63,14 @@ function changeN(){
 }
 
 function cross(a, b) {
-    return true;
+    for (let i = 0; i < l*l; i++) {
+        if (i == a || i == b) continue;
+        for (let j = 0; j < E[i].length; j++) {
+            if (E[i][j] == a || E[i][j] == b) continue;
+            if (intersects(V[a][0], V[a][1], V[b][0], V[b][1], V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1])) return true;
+        }
+    }
+    return false;
 }
 
 function mousePressed() {
@@ -81,14 +94,18 @@ function mouseReleased() {
 
 function draw() {
     background(255);
+    let ct = 0;
     for (let i = 0; i < l*l; i++) {
         for (let j = 0; j < E[i].length; j++) {
-            if (cross(i, j)) stroke('red');
-            else stroke('green');
+            if (cross(i, E[i][j])) stroke('red');
+            else {
+                stroke('green');
+                ct++;
+            }
             line(V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1]);
         }
     }
-    
+
     stroke('black');
     for (let i = 0; i < l*l; i++) {
         fill('blue');
@@ -100,5 +117,16 @@ function draw() {
             fill('yellow');
             circle(V[i][0], V[i][1], 10);
         }
+    }
+
+    stroke('black');
+    fill('black');
+    textSize(28);
+    textAlign(CENTER, CENTER);
+    text((ct/2).toString() + '/' + (3*l*l-4*l+1).toString() + ' uncrossed', 650, 25);
+    if (ct == (3*l*l-4*l+1)*2) {
+        fill(Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256));
+        textSize(40);
+        text("Congratulations you won!", 400, 400);
     }
 }
