@@ -7,12 +7,25 @@ let but, sel;
 function init() {
     V = []; E = []; Sc = -1; Csc = [];
     let VS = [];
-    for (let i = 0; i < l*l; i++) VS.push(i);
+    if (l < 9) {
+        for (let i = 0; i < l*l; i++) {
+            let SV = [400+360*Math.sin(i/(l*l)*2*Math.PI), 400+360*Math.cos(i/(l*l)*2*Math.PI)];
+            VS.push(SV);
+        }
+    } else {
+        for (let i = 0; i < 64; i++) {
+            let SV = [400+360*Math.sin(i/(64)*2*Math.PI), 400+360*Math.cos(i/(64)*2*Math.PI)];
+            VS.push(SV);
+        }
+        for (let i = 0; i < l*l-64; i++) {
+            let SV = [400+240*Math.sin(i/(l*l-64)*2*Math.PI), 400+240*Math.cos(i/(l*l-64)*2*Math.PI)];
+            VS.push(SV);
+        }
+    }
     for (let i = 0; i < l*l; i++) {
         let tmp = Math.floor(Math.random()*VS.length);
-        let SV = [400+360*Math.sin(VS[tmp]/(l*l)*2*Math.PI), 400+360*Math.cos(VS[tmp]/(l*l)*2*Math.PI)];
+        V.push(VS[tmp]);
         VS.splice(tmp, 1);
-        V.push(SV);
     }
     
     for (let i = 0; i < l*l; i++) {
@@ -46,7 +59,7 @@ function setup() {
     but.position(100, 29);
 
     sel = createSelect();
-    for (let i = 0; i < 7; i++) sel.option(i);
+    for (let i = 1; i < 10; i++) sel.option(i);
     sel.changed(changeN);
     sel.position(50, 30);
 
@@ -58,7 +71,7 @@ function newGame(){
 }
 
 function changeN(){
-    l = parseInt(sel.value()) + 2;
+    l = parseInt(sel.value()) + 1;
     init();
 }
 
