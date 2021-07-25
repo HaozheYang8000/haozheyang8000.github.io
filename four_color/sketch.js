@@ -2,7 +2,7 @@ let V, E, F;
 let C, T;
 let l = 6;
 let ST = true;
-let but, Sbut;
+let but;
 
 function setup() {
     createCanvas(800, 800);
