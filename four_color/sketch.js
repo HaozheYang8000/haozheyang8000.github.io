@@ -1,12 +1,15 @@
 let V, E, F;
-let l = 6
+let C, T;
+let l = 6;
+let ST = true;
+let but, Sbut;
 
 function setup() {
     createCanvas(800, 800);
     V = [];
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 6; j++) {
-            V.push([i*100+65+Math.floor(Math.random()*70), j*100+65+Math.floor(Math.random()*70)]);
+            V.push([i*100+65+Math.floor(Math.random()*70)+100, j*100+65+Math.floor(Math.random()*70)]);
         }
     }
 
@@ -31,7 +34,7 @@ function setup() {
         }
     }
 
-    let r = 4;
+    let r = 10;
     while (r > 0) {
         let x = Math.floor(Math.random()*l);
         let y = Math.floor(Math.random()*l);
@@ -64,7 +67,43 @@ function setup() {
             if (F[CI2][i] == CV1 && F[CI2][i-1] == CV2) S2 = false;
         } if (F[CI2][F[CI2].length-1] == CV2 && F[CI2][0] == CV1) S2 = false;
 
-        let tmp = [];
+        let tmp = [CV1];
+        for (let i = 0; i < F[CI1].length; i++) {
+            if (F[CI1][i] == CV1) {
+                if (S1) {
+                    for (let j = 0; j < F[CI1].length - 1; j++) {
+                        let curP = i-j-1;
+                        if (curP < 0) curP += F[CI1].length;
+                        tmp.push(F[CI1][curP]);
+                    }
+                } else {
+                    for (let j = 0; j < F[CI1].length - 1; j++) {
+                        let curP = i+j+1;
+                        if (curP >= F[CI1].length) curP -= F[CI1].length;
+                        tmp.push(F[CI1][curP]);
+                    }
+                }
+                break;
+            }
+        }
+        for (let i = 0; i < F[CI2].length; i++) {
+            if (F[CI2][i] == CV2) {
+                if (S2) {
+                    for (let j = 0; j < F[CI2].length - 2; j++) {
+                        let curP = i+j+1;
+                        if (curP >= F[CI2].length) curP -= F[CI2].length;
+                        tmp.push(F[CI2][curP]);
+                    }
+                } else {
+                    for (let j = 0; j < F[CI2].length - 2; j++) {
+                        let curP = i-j-1;
+                        if (curP < 0) curP += F[CI2].length;
+                        tmp.push(F[CI2][curP]);
+                    }
+                }
+                break;
+            }
+        }
 
         E[E[x*l+y][ind]].splice(ind2, 1);
         E[x*l+y].splice(ind, 1);
@@ -75,8 +114,35 @@ function setup() {
             F.splice(CI2, 1);
             F.splice(CI1, 1);
         }
+        F.push(tmp);
         r--;
     }
+
+    C = [];
+    for (let i = 0; i < F.length; i++) {
+        C.push('white');
+    }
+
+    T = 0;
+    but = createButton("Hide timer");
+    but.position(270, 60);
+    but.mousePressed(hide);
+}
+
+function hide() {
+    ST = false;
+    but.remove();
+    but = createButton("Show timer");
+    but.position(270, 30);
+    but.mousePressed(show);
+}
+
+function show() {
+    ST = true;
+    but.remove();
+    but = createButton("Hide timer");
+    but.position(270, 60);
+    but.mousePressed(hide);
 }
 
 function draw() {
@@ -84,7 +150,7 @@ function draw() {
     
     noStroke();
     for (let i = 0; i < F.length; i++) {
-        fill(Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256));
+        fill(C[i]);
         beginShape();
         for (let j = 0; j < F[i].length; j++) {
             vertex(V[F[i][j]][0], V[F[i][j]][1]);
@@ -93,9 +159,38 @@ function draw() {
     }
 
     stroke('black');
+    strokeWeight(2);
     for (let i = 0; i < l*l; i++) {
         for (let j = 0; j < E[i].length; j++) {
             line(V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1]);
         }
     }
+
+    fill('yellow');
+    rect(20,20,80,40);
+    fill('blue');
+    rect(20,120,80,40);
+    fill('red');
+    rect(20,220,80,40);
+    fill('green');
+    rect(20,320,80,40);
+    fill('white');
+    rect(20,420,80,40);
+    rect(20,520,80,40);
+
+    fill('black');
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textSize(24);
+    text('Erase', 60, 440);
+    text('Submit', 60, 540);
+
+    T++;
+    if (ST) text('Time: ' + Math.floor(T/60) + ' seconds', 300, 30);
+
+    let Cd = 0;
+    for (let i = 0; i < C.length; i++) {
+        if (C[i] != 'white') Cd++;
+    }
+    text('Colored: ' + Cd + '/40', 600, 30);
 }
