@@ -1,11 +1,21 @@
 let V, E, F;
 let C, T;
 let l = 6;
+let CS = "white";
 let ST = true;
 let but;
+let won = false;
+let turn = 'player1';
+let sta = 'game';
+let pt = 1800;
+let P1 = [], P2 = [];
+let GC1, GC2;
 
 function setup() {
     createCanvas(800, 800);
+    textAlign(CENTER, CENTER);
+    textSize(24);
+
     V = [];
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 6; j++) {
@@ -117,13 +127,21 @@ function setup() {
         F.push(tmp);
         r--;
     }
+    initPlayer();
 
+    GC1 = 'red';
+    GC2 = 'green';
+}
+
+function initPlayer() {
     C = [];
-    for (let i = 0; i < F.length; i++) {
-        C.push('white');
-    }
-
+    for (let i = 0; i < F.length; i++) C.push('white');
     T = 0;
+    won = false;
+    CS = 'white';
+    sta = 'game';
+    ST = true;
+
     but = createButton("Hide timer");
     but.position(270, 60);
     but.mousePressed(hide);
@@ -145,52 +163,270 @@ function show() {
     but.mousePressed(hide);
 }
 
+function mouseClicked() {
+    if (mouseX < 100 && mouseX > 20) {
+        if (mouseY > 20 && mouseY < 60) CS = 'yellow';
+        if (mouseY > 120 && mouseY < 160) CS = 'blue';
+        if (mouseY > 220 && mouseY < 260) CS = 'red';
+        if (mouseY > 320 && mouseY < 360) CS = 'green';
+        if (mouseY > 420 && mouseY < 460) CS = 'white';
+        if (mouseY > 520 && mouseY < 560) {
+            if (check()) won = true;
+            else {
+                sta = 'penalty';
+                pt = 1800;
+            }
+        }
+    }
+
+    for (let i = 0; i < F.length; i++) {
+        if (inside(mouseX, mouseY, F[i])) {
+            C[i] = CS;
+        }
+    }
+}
+
+function check() {
+    for (let i = 0; i < C.length; i++) {
+        if (C[i] == "white") return false;
+    }
+    let cor = true;
+    for (let i = 0; i < F.length; i++) {
+        for (let j = i+1; j < F.length; j++) {
+
+            for (let k = 0; k < F[i].length; k++) {
+                let nxt = k+1;
+                if (k+1 == F[i].length) nxt = 0;
+                if (F[j].includes(F[i][k]) && F[j].includes(F[i][nxt])) {
+                    if (C[i] == C[j]) {
+                        C[i] = 'white';
+                        C[j] = 'white';
+                        cor = false;
+                    }
+                }
+            }
+
+        }
+    }
+    return cor;
+}
+
+function intersects(a,b,c,d,p,q,r,s) {
+    let det = (c-a)*(s-q)-(r-p)*(d-b);
+    if (det === 0) return false;
+    else {
+        let al = ((s-q)*(r-a)+(p-r)*(s-b))/det;
+        let la = ((b-d)*(r-a)+(c-a)*(s-b))/det;
+        return 0<al && al<1 && 0<la && la<1;
+    }
+}
+
+function inside(x, y, arr) {
+    let ct1 = 0;
+    for (let i = 0; i < arr.length-1; i++) {
+        if (intersects(x, y, x, 800, V[arr[i]][0], V[arr[i]][1], V[arr[i+1]][0], V[arr[i+1]][1]))
+            ct1++;
+    }
+    if (intersects(x, y, x, 800, V[arr[0]][0], V[arr[0]][1], V[arr[arr.length-1]][0], V[arr[arr.length-1]][1]))
+        ct1++;
+
+    let ct2 = 0;
+    for (let i = 0; i < arr.length-1; i++) {
+        if (intersects(x, y, x, 0, V[arr[i]][0], V[arr[i]][1], V[arr[i+1]][0], V[arr[i+1]][1]))
+            ct2++;
+    }
+    if (intersects(x, y, x, 0, V[arr[0]][0], V[arr[0]][1], V[arr[arr.length-1]][0], V[arr[arr.length-1]][1]))
+        ct2++;
+
+    if (ct1%2 == 0 || ct2%2 == 0) return false;
+    return true;
+}
+
 function draw() {
     background(255);
     
-    noStroke();
-    for (let i = 0; i < F.length; i++) {
-        fill(C[i]);
-        beginShape();
-        for (let j = 0; j < F[i].length; j++) {
-            vertex(V[F[i][j]][0], V[F[i][j]][1]);
+    if (turn == 'player1') {
+        if (sta == 'game') {
+            noStroke();
+            for (let i = 0; i < F.length; i++) {
+                fill(C[i]);
+                beginShape();
+                for (let j = 0; j < F[i].length; j++) {
+                    vertex(V[F[i][j]][0], V[F[i][j]][1]);
+                }
+                endShape(CLOSE);
+            }
+
+            stroke('black');
+            strokeWeight(2);
+            for (let i = 0; i < l*l; i++) {
+                for (let j = 0; j < E[i].length; j++) {
+                    line(V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1]);
+                }
+            }
+            
+            fill('purple');
+            noStroke();
+            if (CS == "yellow") rect(10, 10, 100, 60);
+            if (CS == "blue") rect(10, 110, 100, 60);
+            if (CS == "red") rect(10, 210, 100, 60);
+            if (CS == "green") rect(10, 310, 100, 60);
+            if (CS == "white") rect(10, 410, 100, 60);
+
+            stroke('black');
+            strokeWeight(2);
+            fill('yellow');
+            rect(20,20,80,40);
+            fill('blue');
+            rect(20,120,80,40);
+            fill('red');
+            rect(20,220,80,40);
+            fill('green');
+            rect(20,320,80,40);
+            fill('white');
+            rect(20,420,80,40);
+            rect(20,520,80,40);
+            
+            fill('black');
+            noStroke();
+            text('Erase', 60, 440);
+            text('Submit', 60, 540);
+
+            if (won) {
+                let c1 = 0, c2 = 0;
+                for (let i = 0; i < C.length; i++) {
+                    if (C[i] == GC1) c1++;
+                    if (C[i] == GC2) c2++;
+                }
+                P1.push([c1, c2, Math.floor(T/60)]);
+                P1.push(C);
+
+                but.remove();
+                turn = 'player2';
+                initPlayer();
+            }
+        } if (sta == 'penalty') {
+            background(100);
+            fill('black');
+            noStroke();
+            text('Penalty time remaining: ' + Math.floor(pt/60) + ' seconds', 400, 400);
+            pt--;
+            if (pt == 0) sta = 'game';
         }
-        endShape(CLOSE);
-    }
 
-    stroke('black');
-    strokeWeight(2);
-    for (let i = 0; i < l*l; i++) {
-        for (let j = 0; j < E[i].length; j++) {
-            line(V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1]);
+        T++;
+        if (ST) text('Time: ' + Math.floor(T/60) + ' seconds', 300, 30);
+
+        let Cd = 0;
+        for (let i = 0; i < C.length; i++) {
+            if (C[i] != 'white') Cd++;
         }
+        text('Colored: ' + Cd + '/40', 600, 30);
     }
 
-    fill('yellow');
-    rect(20,20,80,40);
-    fill('blue');
-    rect(20,120,80,40);
-    fill('red');
-    rect(20,220,80,40);
-    fill('green');
-    rect(20,320,80,40);
-    fill('white');
-    rect(20,420,80,40);
-    rect(20,520,80,40);
+    if (turn == 'player2') {
+        if (sta == 'game') {
+            noStroke();
+            for (let i = 0; i < F.length; i++) {
+                fill(C[i]);
+                beginShape();
+                for (let j = 0; j < F[i].length; j++) {
+                    vertex(V[F[i][j]][0], V[F[i][j]][1]);
+                }
+                endShape(CLOSE);
+            }
 
-    fill('black');
-    noStroke();
-    textAlign(CENTER, CENTER);
-    textSize(24);
-    text('Erase', 60, 440);
-    text('Submit', 60, 540);
+            stroke('black');
+            strokeWeight(2);
+            for (let i = 0; i < l*l; i++) {
+                for (let j = 0; j < E[i].length; j++) {
+                    line(V[i][0], V[i][1], V[E[i][j]][0], V[E[i][j]][1]);
+                }
+            }
+            
+            fill('purple');
+            noStroke();
+            if (CS == "yellow") rect(10, 10, 100, 60);
+            if (CS == "blue") rect(10, 110, 100, 60);
+            if (CS == "red") rect(10, 210, 100, 60);
+            if (CS == "green") rect(10, 310, 100, 60);
+            if (CS == "white") rect(10, 410, 100, 60);
 
-    T++;
-    if (ST) text('Time: ' + Math.floor(T/60) + ' seconds', 300, 30);
+            stroke('black');
+            strokeWeight(2);
+            fill('yellow');
+            rect(20,20,80,40);
+            fill('blue');
+            rect(20,120,80,40);
+            fill('red');
+            rect(20,220,80,40);
+            fill('green');
+            rect(20,320,80,40);
+            fill('white');
+            rect(20,420,80,40);
+            rect(20,520,80,40);
+            
+            fill('black');
+            noStroke();
+            text('Erase', 60, 440);
+            text('Submit', 60, 540);
 
-    let Cd = 0;
-    for (let i = 0; i < C.length; i++) {
-        if (C[i] != 'white') Cd++;
+            if (won) {
+                let c1 = 0, c2 = 0;
+                for (let i = 0; i < C.length; i++) {
+                    if (C[i] == GC1) c1++;
+                    if (C[i] == GC2) c2++;
+                }
+                P2.push([c1, c2, Math.floor(T/60)]);
+                P2.push(C);
+
+                but.remove();
+                turn = 'end';
+            }
+        } if (sta == 'penalty') {
+            background(100);
+            fill('black');
+            noStroke();
+            text('Penalty time remaining: ' + Math.floor(pt/60) + ' seconds', 400, 400);
+            pt--;
+            if (pt == 0) sta = 'game';
+        }
+
+        T++;
+        if (ST) text('Time: ' + Math.floor(T/60) + ' seconds', 300, 30);
+
+        let Cd = 0;
+        for (let i = 0; i < C.length; i++) {
+            if (C[i] != 'white') Cd++;
+        }
+        text('Colored: ' + Cd + '/40', 600, 30);
     }
-    text('Colored: ' + Cd + '/40', 600, 30);
+
+    if (turn == 'end') {
+        fill('black');
+        let p1s = 'player 1: \n you used ' + P1[0][0] + ' ' + GC1 + ' blocks\n';
+        p1s += 'you used ' + P1[0][1] + ' ' + GC2 + ' blocks\n';
+        p1s += 'you took ' + P1[0][2] + ' seconds\n';
+        text(p1s, 200, 200);
+
+        let p2s = 'player 2: \n you used ' + P2[0][0] + ' ' + GC1 + ' blocks\n';
+        p2s += 'you used ' + P2[0][1] + ' ' + GC2 + ' blocks\n';
+        p2s += 'you took ' + P2[0][2] + ' seconds\n';
+        text(p2s, 600, 200);
+
+        let winner = '';
+        if (P1[0][0] < P2[0][0]) winner = 'player1';
+        else if (P1[0][0] > P2[0][0]) winner = 'player2';
+        else if (P1[0][1] < P2[0][1]) winner = 'player1';
+        else if (P1[0][1] > P2[0][1]) winner = 'player2';
+        else if (P1[0][2] < P2[0][2]) winner = 'player1';
+        else if (P1[0][2] > P2[0][2]) winner = 'player2';
+        else {
+            winner = "tie";
+            text("Wow, tie game? You guys must have the same brain!", 400, 400);
+        }
+
+        fill(Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256));
+        if (winner != 'tie') text("Congratulations, " + winner + " won!", 400, 400);
+    }
 }
