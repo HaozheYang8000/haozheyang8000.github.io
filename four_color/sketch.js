@@ -485,8 +485,6 @@ function draw() {
         fill(Math.floor(Math.random()*256), Math.floor(Math.random()*256), Math.floor(Math.random()*256));
         if (winner != 'tie') text("Congratulations, " + winner + " won!", 400, 300);
 
-        // display grid
-        // change V
         noStroke();
         for (let i = 0; i < F.length; i++) {
             fill(P1[1][i]);
